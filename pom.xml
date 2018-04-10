@@ -68,7 +68,7 @@
         </repository>
     </distributionManagement>
     <properties>
-        <janusgraph.compatible.versions>0.1.0,0.1.1,0.2.0</janusgraph.compatible.versions>
+        <janusgraph.storage.version>2</janusgraph.storage.version>
         <titan.compatible-versions>1.0.0,1.1.0-SNAPSHOT</titan.compatible-versions>
         <tinkerpop.version>3.3.1</tinkerpop.version>
         <junit.version>4.12</junit.version>
