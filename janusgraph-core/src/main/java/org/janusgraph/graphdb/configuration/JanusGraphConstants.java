@@ -60,6 +60,13 @@ public class JanusGraphConstants {
      */
     public static final String TITAN_ID_STORE_NAME = "titan_ids";
 
+
+    /**
+     * Storage format version currently used by JanusGraph, version 1 is for JanusGraph 2.0 and below
+     */
+    public static final Integer STORAGE_FORMAT_VERSION = 2;
+
+
     static {
 
         /*
