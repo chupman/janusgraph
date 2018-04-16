@@ -55,17 +55,4 @@ public class CQLGraphTest extends CassandraGraphTest {
 
         graph = (StandardJanusGraph) JanusGraphFactory.open(wc);
     }
-
-    @Test
-    public void testStorageVerisonSet() {
-        close();
-        WriteConfiguration wc = getConfiguration();
-
-        assertFalse(GraphDatabaseConfiguration.INITIAL_STORAGE_VERSION.equals(0));
-
-        assertTrue(JanusGraphConstants.STORAGE_FORMAT_VERSION.equals(GraphDatabaseConfiguration.INITIAL_STORAGE_VERSION));
-
-        graph = (StandardJanusGraph) JanusGraphFactory.open(wc);
-    }
-
 }
