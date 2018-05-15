@@ -50,6 +50,19 @@ public abstract class CassandraGraphTest extends JanusGraphTest {
     }
 
     @Test
+    public void testStorageVerisonSet() {
+        close();
+        WriteConfiguration wc = getConfiguration();
+
+        assertFalse(wc.get(ConfigElement.getPath(GraphDatabaseConfiguration.INITIAL_STORAGE_VERSION),
+                            GraphDatabaseConfiguration.INITIAL_STORAGE_VERSION.getDatatype()).equals(null));
+        assertTrue(JanusGraphConstants.STORAGE_FORMAT_VERSION.equals(wc.get(ConfigElement.getPath(GraphDatabaseConfiguration.INITIAL_STORAGE_VERSION),
+                            GraphDatabaseConfiguration.INITIAL_STORAGE_VERSION.getDatatype())));
+
+        graph = (StandardJanusGraph) JanusGraphFactory.open(wc);
+    }
+
+    @Test
     public void testGraphConfigUsedByThreadBoundTx() {
         close();
         WriteConfiguration wc = getConfiguration();

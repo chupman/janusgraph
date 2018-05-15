@@ -60,6 +60,13 @@ public class JanusGraphConstants {
      */
     public static final String TITAN_ID_STORE_NAME = "titan_ids";
 
+
+    /**
+     * Storage format version currently used by JanusGraph, version 1 is for JanusGraph 2.0 and below
+     */
+    public static final String STORAGE_FORMAT_VERSION;
+
+
     static {
 
         /*
@@ -84,6 +91,7 @@ public class JanusGraphConstants {
         }
 
         VERSION = props.getProperty("janusgraph.version");
+        STORAGE_FORMAT_VERSION = props.getProperty("janusgraph.storage-version");
         COMPATIBLE_VERSIONS = getCompatibleVersions(props, "janusgraph.compatible-versions");
         TITAN_COMPATIBLE_VERSIONS = getCompatibleVersions(props, "titan.compatible-versions");
     }

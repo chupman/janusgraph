@@ -162,6 +162,10 @@ public class GraphDatabaseConfiguration {
             "The version of JanusGraph with which this database was created. Automatically set on first start. Don't manually set this property.",
             ConfigOption.Type.FIXED, String.class).hide();
 
+    public static final ConfigOption<String> INITIAL_STORAGE_VERSION = new ConfigOption<>(GRAPH_NS,"storage-version",
+            "The version of JanusGraph storage schema with which this database was created. Automatically set on first start. Don't manually set this property.",
+            ConfigOption.Type.FIXED, String.class).hide();
+
     public static final ConfigOption<Boolean> UNIQUE_INSTANCE_ID_HOSTNAME = new ConfigOption<Boolean>(GRAPH_NS,"use-hostname-for-unique-instance-id",
             "When this is set, this JanusGraph's unique instance identifier is set to the hostname. If " + UNIQUE_INSTANCE_ID_SUFFIX.getName() +
             " is also set, then the identifier is set to <hostname><suffix>.",
@@ -1209,7 +1213,8 @@ public class GraphDatabaseConfiguration {
     public static final String SYSTEM_PROPERTIES_STORE_NAME = "system_properties";
     public static final String SYSTEM_CONFIGURATION_IDENTIFIER = "configuration";
     public static final String USER_CONFIGURATION_IDENTIFIER = "userconfig";
-    private static final String INCOMPATIBLE_VERSION_EXCEPTION = "StorageBackend version is incompatible with current JanusGraph version: storage [%1s] vs. runtime [%2s]";
+    private static final String INCOMPATIBLE_VERSION_EXCEPTION = "Runtime version is incompatible with current JanusGraph version: JanusGraph [%1s] vs. runtime [%2s]";
+    private static final String INCOMPATIBLE_STORAGE_VERSION_EXCEPTION = "Storage format version is incompatible with current client: graph storage version [%s] vs. client storage version [%s]";
 
     private final Configuration configuration;
     private final ReadConfiguration configurationAtOpen;
@@ -1268,6 +1273,10 @@ public class GraphDatabaseConfiguration {
                 //Write JanusGraph version
                 Preconditions.checkArgument(!globalWrite.has(INITIAL_JANUSGRAPH_VERSION),"Database has already been initialized but not frozen");
                 globalWrite.set(INITIAL_JANUSGRAPH_VERSION,JanusGraphConstants.VERSION);
+		
+                //Write storage version
+                Preconditions.checkArgument(!globalWrite.has(INITIAL_STORAGE_VERSION),"Database has already been initialized but not frozen");
+                globalWrite.set(INITIAL_STORAGE_VERSION,JanusGraphConstants.STORAGE_FORMAT_VERSION);
 
                 /* If the configuration does not explicitly set a timestamp provider and
                  * the storage backend both supports timestamps and has a preference for
@@ -1292,12 +1301,27 @@ public class GraphDatabaseConfiguration {
                 globalWrite.freezeConfiguration();
             } else {
                 try {
-                    String version = globalWrite.get(INITIAL_JANUSGRAPH_VERSION);
-                    Preconditions.checkArgument(version!=null,"JanusGraph version has not been initialized");
-                    if (!JanusGraphConstants.VERSION.equals(version) && !JanusGraphConstants.COMPATIBLE_VERSIONS.contains(version)) {
-                        throw new JanusGraphException(String.format(INCOMPATIBLE_VERSION_EXCEPTION, version, JanusGraphConstants.VERSION));
+                    String storageVersion;
+                    if (globalWrite.has(INITIAL_STORAGE_VERSION)) {
+                        storageVersion = Preconditions.checkNotNull(globalWrite.get(INITIAL_STORAGE_VERSION));
+                    } else {
+                        storageVersion = "1";
+                        throw new JanusGraphException(String.format(INCOMPATIBLE_STORAGE_VERSION_EXCEPTION, storageVersion, JanusGraphConstants.STORAGE_FORMAT_VERSION));
                     }
                 } catch (IllegalStateException ise) {
+                    String mismatchMessage = "storage format mismatch";
+                    throw new JanusGraphException(String.format(mismatchMessage));
+                }
+
+                try {
+                    String version = globalWrite.get(INITIAL_JANUSGRAPH_VERSION);
+                    Preconditions.checkArgument(version!=null,"JanusGraph version has not been initialized");
+//                    It still makes sense to do a titan compatibility check, but the version check has been replaced with the storage format version check
+/*                    if (!JanusGraphConstants.VERSION.equals(version) && !JanusGraphConstants.COMPATIBLE_VERSIONS.contains(version)) {
+                        throw new JanusGraphException(String.format(INCOMPATIBLE_VERSION_EXCEPTION, version, JanusGraphConstants.VERSION));
+                    }*/
+                } catch (IllegalStateException ise) {
+                    // This check should be updated with instructions on upgrading to storage format version 2 once the documentation has been created. 
                     checkBackwardCompatibilityWithTitan(globalWrite, localBasicConfiguration, keyColumnValueStoreConfiguration, overwrite);
                 }
 
