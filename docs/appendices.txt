@@ -16,3 +16,5 @@ include::versions.txt[]
 include::changelog.txt[]
 
 include::upgrade.txt[]
+
+include::doc-versions.txt[]
