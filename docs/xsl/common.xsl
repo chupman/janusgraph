@@ -110,7 +110,16 @@
             <nav id="nav" class="nav-holder">
               <ul class="navigation menu fusion-navbar-nav">
                 <li id="menu-item-4711" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4711"><a href="index.html">Documentation ($MAVEN{project.version})</a></li>
-                <li id="menu-item-4712" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4712"><a href="https://github.com/JanusGraph/janusgraph/releases">Other Versions</a></li>
+                <li id="menu-item-4712" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4712 dropdown"><a href="https://docs.janusgraph.org/latest/doc-versions.html">Other Doc Versions</a>
+                  <div class="dropdown-content">
+                    <a href="https://docs.janusgraph.org/latest/index.html">Latest</a>
+                    <a href="https://docs.janusgraph.org/0.3.0/index.html">Version 0.3.0</a>
+                    <a href="https://docs.janusgraph.org/0.2.1/index.html">Version 0.2.1</a>
+                    <a href="https://docs.janusgraph.org/0.2.0/index.html">Version 0.2.0</a>
+                    <a href="https://docs.janusgraph.org/0.1.1/index.html">Version 0.1.1</a>
+                    <a href="https://docs.janusgraph.org/0.1.0/index.html">Version 0.1.0</a>
+                  </div> 
+                </li>
                 <li id="menu-item-4710" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4710"><a href="https://github.com/JanusGraph/janusgraph/releases">Download JanusGraph</a></li>
               </ul>
             </nav>
@@ -131,7 +140,16 @@
           <nav id="sticky-nav" class="nav-holder">
             <ul class="navigation menu fusion-navbar-nav">
               <li id="menu-item-4711" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4711"><a href="index.html">Documentation ($MAVEN{project.version})</a></li>
-              <li id="menu-item-4712" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4712"><a href="https://github.com/JanusGraph/janusgraph/releases">Other Versions</a></li>
+              <li id="menu-item-4712" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4712 dropdown"><a href="https://docs.janusgraph.org/latest/doc-versions.html">Other Doc Versions</a>
+                <div class="dropdown-content">
+                  <a href="https://docs.janusgraph.org/latest/index.html">Latest</a>
+                  <a href="https://docs.janusgraph.org/0.3.0/index.html">Version 0.3.0</a>
+                  <a href="https://docs.janusgraph.org/0.2.1/index.html">Version 0.2.1</a>
+                  <a href="https://docs.janusgraph.org/0.2.0/index.html">Version 0.2.0</a>
+                  <a href="https://docs.janusgraph.org/0.1.1/index.html">Version 0.1.1</a>
+                  <a href="https://docs.janusgraph.org/0.1.0/index.html">Version 0.1.0</a>
+                </div>
+              </li>
               <li id="menu-item-4710" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-4710"><a href="https://github.com/JanusGraph/janusgraph/releases">Download JanusGraph</a></li>
             </ul>
           </nav>
