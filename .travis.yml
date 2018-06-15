@@ -37,6 +37,7 @@ env:
   matrix:
     # sort modules by test time with quickest modules first
     - MODULE='server'
+    - MODULE='all' ARGS='-Pjanusgraph-release -Dgpg.skip=true -DskipTests=true'
     - MODULE='hadoop-parent/janusgraph-hadoop-2'
     - MODULE='lucene'
     - MODULE='solr' ARGS='-Pdocker,solr7'
