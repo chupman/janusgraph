@@ -37,6 +37,7 @@ env:
   matrix:
     # sort modules by test time with quickest modules first
     - MODULE='server'
+    - MODULE='all' ARGS='-Pjanusgraph-release -Dgpg.skip=true -DskipTests=true'
     - MODULE='hadoop-parent/janusgraph-hadoop-2'
     - MODULE='lucene'
     - MODULE='solr' ARGS='-Pdocker,solr7'
@@ -92,7 +93,9 @@ install:
       travis_retry travis_wait \
           mvn install -DskipTests=true -Dmaven.javadoc.skip=true --batch-mode --show-version;
     elif [ "${TRAVIS_BRANCH}" == "${COVERITY_BRANCH_NAME}" ] || [ -n "${COVERITY_ONLY:-}" ]; then
-      echo "Skipping module build on Coverity branch/job";
+      echo "Building all modules for test-compile coverage, but skipping Coverity upload";
+      travis_retry travis_wait \
+          mvn install -DskipTests=true -Dmaven.javadoc.skip=true --batch-mode --show-version;
     else
       echo "Building janusgraph-${MODULE} and dependencies";
       travis_retry travis_wait \
