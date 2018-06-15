@@ -121,8 +121,9 @@ public class SolrIndex implements IndexProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(SolrIndex.class);
 
-
     private static final String DEFAULT_ID_FIELD = "id";
+    private static final String STRING_POSTFIX = "_s";
+    private static final String TEXTSTRING_POSTFIX = "_t";
 
     private enum Mode {
         HTTP, CLOUD;
@@ -208,7 +209,7 @@ public class SolrIndex implements IndexProvider {
     private static final IndexFeatures SOLR_FEATURES = new IndexFeatures.Builder()
         .supportsDocumentTTL()
         .setDefaultStringMapping(Mapping.TEXT)
-        .supportedStringMappings(Mapping.TEXT, Mapping.STRING)
+        .supportedStringMappings(Mapping.TEXT, Mapping.STRING, Mapping.TEXTSTRING)
         .supportsCardinality(Cardinality.SINGLE)
         .supportsCardinality(Cardinality.LIST)
         .supportsCardinality(Cardinality.SET)
@@ -412,6 +413,14 @@ public class SolrIndex implements IndexProvider {
         } catch (final Exception e) {
             throw storageException(e);
         }
+    }
+
+    private String getDualMappingName(String key) {
+        return key.endsWith(TEXTSTRING_POSTFIX)?key.substring(0, key.length() - 1) + "s":key + STRING_POSTFIX;
+    }
+
+    private static boolean hasDualStringMapping(KeyInformation information) {
+        return AttributeUtil.isString(information.getDataType()) && getStringMapping(information)==Mapping.TEXTSTRING;
     }
 
     private void handleRemovalsFromIndex(String collectionName, String keyIdField, String docId,
@@ -682,7 +691,7 @@ public class SolrIndex implements IndexProvider {
                 }
             } else if (value instanceof String) {
                 final Mapping map = getStringMapping(information.get(key));
-                assert map==Mapping.TEXT || map==Mapping.STRING;
+                assert map==Mapping.TEXT || map==Mapping.STRING || map==Mapping.TEXTSTRING;
 
                 if (map==Mapping.TEXT && !(Text.HAS_CONTAINS.contains(predicate) || predicate instanceof Cmp))
                     throw new IllegalArgumentException("Text mapped string values only support CONTAINS and Compare queries and not: " + predicate);
