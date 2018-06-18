@@ -35,7 +35,6 @@ env:
     - COVERITY_EMAIL="sjudeng@gmail.com"
     # Default Elasticsearch heap size can be too large for Travis
     - ES_JAVA_OPTS="-Xms256m -Xmx512m"
-    - DOCS_ONLY=${commit_message//*[docs]*/true}
 
   matrix:
     # sort modules by test time with quickest modules first
@@ -92,7 +91,7 @@ matrix:
     - env: MODULE='cql' ARGS='-Dtest=**/graphdb/cql/* -Dtest.skip.byteorderedpartitioner=true -Dtest.skip.murmur-serial=true -Dtest.skip.murmur-ssl=true'
 
 install:
-  - if [ ${DOCS_ONLY} == "true" ]; then
+  - if [ ${commit_message//*[docs]*/true} == "true" ]; then
       echo "DOC_ONLY is " ${DOC_ONLY}
       echo "DOC is " ${DOC}
     elif [ "${TRAVIS_BRANCH}" == "${COVERITY_BRANCH_NAME}" ] && [ -n "${COVERITY_ONLY:-}" ]; then
