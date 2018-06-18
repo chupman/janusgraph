@@ -23,6 +23,8 @@ jdk:
 cache:
   directories:
     - ${HOME}/.m2
+# 
+conditions: v1
 
 env:
   global:
@@ -33,9 +35,11 @@ env:
     - COVERITY_EMAIL="sjudeng@gmail.com"
     # Default Elasticsearch heap size can be too large for Travis
     - ES_JAVA_OPTS="-Xms256m -Xmx512m"
+    - DOCS_ONLY=commit_message~=\[docs\]
 
   matrix:
     # sort modules by test time with quickest modules first
+    - DOCS=true
     - MODULE='server'
     - MODULE='all' ARGS='-Pjanusgraph-release -Dgpg.skip=true -DskipTests=true'
     - MODULE='hadoop-parent/janusgraph-hadoop-2'
@@ -88,7 +92,10 @@ matrix:
     - env: MODULE='cql' ARGS='-Dtest=**/graphdb/cql/* -Dtest.skip.byteorderedpartitioner=true -Dtest.skip.murmur-serial=true -Dtest.skip.murmur-ssl=true'
 
 install:
-  - if [ "${TRAVIS_BRANCH}" == "${COVERITY_BRANCH_NAME}" ] && [ -n "${COVERITY_ONLY:-}" ]; then
+  - if [ ${DOCS_ONLY} ]; then
+      echo "DOC_ONLY is " ${DOC_ONLY}
+      echo "DOC is " ${DOC}
+    elif [ "${TRAVIS_BRANCH}" == "${COVERITY_BRANCH_NAME}" ] && [ -n "${COVERITY_ONLY:-}" ]; then
       echo "Building all modules for Coverity analysis";
       travis_retry travis_wait \
           mvn install -DskipTests=true -Dmaven.javadoc.skip=true --batch-mode --show-version;
@@ -96,6 +103,8 @@ install:
       echo "Building all modules for test-compile coverage, but skipping Coverity upload";
       travis_retry travis_wait \
           mvn install -DskipTests=true -Dmaven.javadoc.skip=true --batch-mode --show-version;
+    elif [ -n "${DOCS_ONLY:-}" ]; then
+      echo "DOC_ONLY is " $DOC_ONLY
     else
       echo "Building janusgraph-${MODULE} and dependencies";
       travis_retry travis_wait \
