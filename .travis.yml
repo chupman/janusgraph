@@ -91,9 +91,8 @@ matrix:
     - env: MODULE='cql' ARGS='-Dtest=**/graphdb/cql/* -Dtest.skip.byteorderedpartitioner=true -Dtest.skip.murmur-serial=true -Dtest.skip.murmur-ssl=true'
 
 install:
-  - if [ ${commit_message//*[docs]*/true} == "true" ]; then
-      echo "DOC_ONLY is " ${DOC_ONLY}
-      echo "DOC is " ${DOC}
+  - if [ ${commit_message} =~ "[docs]" ]; then
+      echo ${commit_message};
     elif [ "${TRAVIS_BRANCH}" == "${COVERITY_BRANCH_NAME}" ] && [ -n "${COVERITY_ONLY:-}" ]; then
       echo "Building all modules for Coverity analysis";
       travis_retry travis_wait \
