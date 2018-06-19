@@ -37,9 +37,12 @@ env:
   matrix:
     # sort modules by test time with quickest modules first
     - MODULE='server'
-    - MODULE='hadoop-parent/janusgraph-hadoop-2'
-    - MODULE='lucene'
-    - COVERITY_ONLY=true
+    - if env(TRAVIS_COMMIT_MESSAGE) =~ [docs]
+      MODULE='hadoop-parent/janusgraph-hadoop-2'
+    - if env(commit_message) =~ [docs]
+      MODULE='lucene'
+    - if $commit_message =~ [docs]
+      COVERITY_ONLY=true
 
 matrix:
   fast_finish: true
