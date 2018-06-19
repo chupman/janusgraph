@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+conditions: v1
 group: travis_latest
 language: java
 sudo: true
@@ -23,8 +24,6 @@ jdk:
 cache:
   directories:
     - ${HOME}/.m2
-# 
-conditions: v1
 
 env:
   global:
@@ -53,7 +52,7 @@ matrix:
 
 install:
   - if [[ ${commit_message} =~ \[docs\] ]]; then
-      echo ${commit_message};
+      echo "Commit message is ${commit_message}";
     elif [ "${TRAVIS_BRANCH}" == "${COVERITY_BRANCH_NAME}" ] && [ -n "${COVERITY_ONLY:-}" ]; then
       echo "Building all modules for Coverity analysis";
       travis_retry travis_wait \
