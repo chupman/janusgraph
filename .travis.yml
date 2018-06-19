@@ -33,16 +33,16 @@ env:
     - COVERITY_BRANCH_NAME="coverity_scan"
     # Default Elasticsearch heap size can be too large for Travis
     - ES_JAVA_OPTS="-Xms256m -Xmx512m"
-
   matrix:
     include:
-      - MODULE='server'
-        if: commit_message !~ /(.*\[docs\].*|docs)/
-      - MODULE='hadoop-parent/janusgraph-hadoop-2'
-        if: commit_message !~ /(.*\[docs\].*|docs)/
-      - MODULE='lucene'
-        if: env(TRAVIS_COMMIT_MESSAGE) =~ /(.*\[docs\].*|docs)/
-  COVERITY_ONLY=true
+      if: commit_message !~ /(.*\[docs\].*|docs)/
+        env: MODULE='server'
+#        if: commit_message !~ /(.*\[docs\].*|docs)/
+#      - MODULE='hadoop-parent/janusgraph-hadoop-2'
+#        if: commit_message !~ /(.*\[docs\].*|docs)/
+#      - MODULE='lucene'
+#        if: env(TRAVIS_COMMIT_MESSAGE) =~ /(.*\[docs\].*|docs)/
+#  COVERITY_ONLY=true
 
 matrix:
   fast_finish: true
