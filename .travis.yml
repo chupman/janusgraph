@@ -52,7 +52,7 @@ matrix:
     # Can fail due to timeout (runs longer than 50min)
 
 install:
-  - if [ ${commit_message} =~ \[docs\] ]; then
+  - if [[ ${commit_message} =~ \[docs\] ]]; then
       echo ${commit_message};
     elif [ "${TRAVIS_BRANCH}" == "${COVERITY_BRANCH_NAME}" ] && [ -n "${COVERITY_ONLY:-}" ]; then
       echo "Building all modules for Coverity analysis";
