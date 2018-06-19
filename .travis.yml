@@ -75,16 +75,12 @@ script:
       echo "Building Docker image for Coverity analysis";
       docker build -t janusgraph/analysis analysis;
       echo "Running Coverity scan";
-      travis_wait 50 \
-        docker run --rm \
-            -v ${HOME}/.m2:/root/.m2 -v ${PWD}:/opt/janusgraph \
-            -e COVERITY_SCAN_TOKEN="${COVERITY_SCAN_TOKEN}" \
-            -e COVERITY_EMAIL="${COVERITY_EMAIL}" \
-            -i janusgraph/analysis;
+      echo "Commit message is ${commit_message}";
     elif [ "${TRAVIS_BRANCH}" == "${COVERITY_BRANCH_NAME}" ] || [ -n "${COVERITY_ONLY:-}" ]; then
+      echo "Commit message is ${commit_message}";
       echo "Skipping module tests on Coverity branch/job";
     else
-      echo ${commit_message};
+      echo "Commit message is ${commit_message}";
       echo "Testing janusgraph-${MODULE}";
       travis_retry travis_wait 50 \
           mvn clean verify --projects janusgraph-${MODULE} -Pcoverage ${ARGS};
@@ -94,11 +90,7 @@ after_success:
   # Upload test coverage reports to Codecov
   - if [ "${TRAVIS_BRANCH}" == "${COVERITY_BRANCH_NAME}" ] || [ -n "${COVERITY_ONLY:-}" ]; then
       echo "Skipping test coverage report upload in Coverity branch/job";
+      echo "Commit message is ${commit_message}";
     else
-      bash <(curl -s https://codecov.io/bash);
+      echo "Commit message is ${commit_message}";
     fi
-
-# Syntax and more info: https://docs.travis-ci.com/user/notifications
-notifications:
-  email:
-    - janusgraph-ci@googlegroups.com
