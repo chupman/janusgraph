@@ -38,7 +38,6 @@ env:
 
   matrix:
     # sort modules by test time with quickest modules first
-    - DOCS=true
     - MODULE='server'
     - MODULE='all' ARGS='-Pjanusgraph-release -Dgpg.skip=true -DskipTests=true'
     - MODULE='hadoop-parent/janusgraph-hadoop-2'
@@ -91,7 +90,7 @@ matrix:
     - env: MODULE='cql' ARGS='-Dtest=**/graphdb/cql/* -Dtest.skip.byteorderedpartitioner=true -Dtest.skip.murmur-serial=true -Dtest.skip.murmur-ssl=true'
 
 install:
-  - if [[ ${commit_message} =~ '[docs]' ]]; then
+  - if [[ ${commit_message} =~ 'docs' ]]; then
       echo ${commit_message};
     elif [ "${TRAVIS_BRANCH}" == "${COVERITY_BRANCH_NAME}" ] && [ -n "${COVERITY_ONLY:-}" ]; then
       echo "Building all modules for Coverity analysis";
