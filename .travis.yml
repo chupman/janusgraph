@@ -50,7 +50,7 @@ matrix:
     # Can fail due to timeout (runs longer than 50min)
 
 install:
-  - if [[ "${TRAVIS_COMMIT_MESSAGE/[docs]}" == "[docs]" ]]; then
+  - if [ -n "${TRAVIS_COMMIT_MESSAGE:-}" ]; then
       echo $TRAVIS_COMMIT_MESSAGE;
       echo "doc only stuff goes here";
     elif [ "${TRAVIS_BRANCH}" == "${COVERITY_BRANCH_NAME}" ] && [ -n "${COVERITY_ONLY:-}" ]; then
