@@ -1220,10 +1220,14 @@ public class GraphDatabaseConfiguration {
     private static final String INCOMPATIBLE_STORAGE_VERSION_EXCEPTION = "Storage version is incompatible with current client: graph storage version %s vs. client storage version %s when opening graph %s.";
     private static final String BACKLEVEL_STORAGE_VERSION_EXCEPTION = "The storage version on the client or server is lower than the storage version of the graph: graph storage version %s vs. client storage version %s when opening graph %s.";
 
-    private final Configuration configuration;
+    private Configuration configuration;
     private final ReadConfiguration configurationAtOpen;
     private String uniqueGraphId;
     private final ModifiableConfiguration localConfiguration;
+    private BasicConfiguration localBasicConfiguration;
+    private KeyColumnValueStoreManager storeManager;
+    private KCVSConfiguration keyColumnValueStoreConfiguration;
+    private ModifiableConfiguration globalWrite;
 
     private boolean readOnly;
     private boolean flushIDs;
@@ -1244,23 +1248,41 @@ public class GraphDatabaseConfiguration {
     private StoreFeatures storeFeatures = null;
 
     public GraphDatabaseConfiguration(ReadConfiguration localConfig) {
-        Preconditions.checkNotNull(localConfig);
-
-        configurationAtOpen = localConfig;
-
-        BasicConfiguration localBasicConfiguration = new BasicConfiguration(ROOT_NS,localConfig, BasicConfiguration.Restriction.NONE);
-        ModifiableConfiguration overwrite = new ModifiableConfiguration(ROOT_NS,new CommonsConfiguration(), BasicConfiguration.Restriction.NONE);
-
-        final KeyColumnValueStoreManager storeManager = Backend.getStorageManager(localBasicConfiguration);
-
-        final StoreFeatures storeFeatures = storeManager.getFeatures();
-        KCVSConfiguration keyColumnValueStoreConfiguration=Backend.getStandaloneGlobalConfiguration(storeManager,localBasicConfiguration);
-        final ReadConfiguration globalConfig;
+        this.configurationAtOpen = Preconditions.checkNotNull(localConfig);
+        this.localBasicConfiguration = new BasicConfiguration(ROOT_NS,this.configurationAtOpen, BasicConfiguration.Restriction.NONE);
+        this.storeManager = Backend.getStorageManager(this.localBasicConfiguration);
+        this.keyColumnValueStoreConfiguration = Backend.getStandaloneGlobalConfiguration(this.storeManager,this.localBasicConfiguration);
+        this.globalWrite = new ModifiableConfiguration(ROOT_NS,keyColumnValueStoreConfiguration, BasicConfiguration.Restriction.GLOBAL);
 
         //Copy over local config options
         localConfiguration = new ModifiableConfiguration(ROOT_NS, new CommonsConfiguration(), BasicConfiguration.Restriction.LOCAL);
         localConfiguration.setAll(getLocalSubset(localBasicConfiguration.getAll()));
+        init(this.configurationAtOpen, this.localBasicConfiguration, this.storeManager, this.keyColumnValueStoreConfiguration, this.globalWrite);
+        }
 
+    // this is only intended for testing
+    public GraphDatabaseConfiguration(ReadConfiguration localConfig, boolean freeze) {
+        this.configurationAtOpen = Preconditions.checkNotNull(localConfig);
+        this.localBasicConfiguration = new BasicConfiguration(ROOT_NS,this.configurationAtOpen, BasicConfiguration.Restriction.NONE);
+        this.storeManager = storeManager;
+        this.keyColumnValueStoreConfiguration = keyColumnValueStoreConfiguration;
+        globalWrite = new ModifiableConfiguration(ROOT_NS,keyColumnValueStoreConfiguration, BasicConfiguration.Restriction.GLOBAL);
+        if (!globalWrite.isFrozen()) {
+            globalWrite.freezeConfiguration();
+        }
+        this.globalWrite = globalWrite;
+
+        //Copy over local config options
+        localConfiguration = new ModifiableConfiguration(ROOT_NS, new CommonsConfiguration(), BasicConfiguration.Restriction.LOCAL);
+        localConfiguration.setAll(getLocalSubset(localBasicConfiguration.getAll()));
+        init(this.configurationAtOpen, this.localBasicConfiguration, this.storeManager, this.keyColumnValueStoreConfiguration, this.globalWrite);
+        }
+
+    public void init(ReadConfiguration configurationAtOpen, BasicConfiguration localBasicConfiguration, KeyColumnValueStoreManager storeManager, KCVSConfiguration keyColumnValueStoreConfiguration, ModifiableConfiguration globalWrite) {
+        
+        ModifiableConfiguration overwrite = new ModifiableConfiguration(ROOT_NS,new CommonsConfiguration(), BasicConfiguration.Restriction.NONE);
+        final StoreFeatures storeFeatures = storeManager.getFeatures();
+        final ReadConfiguration globalConfig;
         //Read out global configuration
         try {
             // If lock prefix is unspecified, specify it now
@@ -1268,9 +1290,9 @@ public class GraphDatabaseConfiguration {
                 overwrite.set(LOCK_LOCAL_MEDIATOR_GROUP, storeManager.getName());
             }
 
-            //Freeze global configuration if not already frozen!
-            ModifiableConfiguration globalWrite = new ModifiableConfiguration(ROOT_NS,keyColumnValueStoreConfiguration, BasicConfiguration.Restriction.GLOBAL);
+            //ModifiableConfiguration globalWrite = new ModifiableConfiguration(ROOT_NS,keyColumnValueStoreConfiguration, BasicConfiguration.Restriction.GLOBAL);
 
+            //Freeze global configuration if not already frozen!
             if (!globalWrite.isFrozen()) {
                 //Copy over global configurations
                 globalWrite.setAll(getGlobalSubset(localBasicConfiguration.getAll()));
@@ -1412,7 +1434,7 @@ public class GraphDatabaseConfiguration {
         } finally {
             keyColumnValueStoreConfiguration.close();
         }
-        Configuration combinedConfig = new MixedConfiguration(ROOT_NS,globalConfig,localConfig);
+        Configuration combinedConfig = new MixedConfiguration(ROOT_NS,globalConfig,configurationAtOpen);
 
         //Compute unique instance id
         this.uniqueGraphId = getOrGenerateUniqueInstanceId(combinedConfig);

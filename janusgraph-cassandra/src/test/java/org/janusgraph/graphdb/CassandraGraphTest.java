@@ -27,6 +27,8 @@ import org.janusgraph.core.JanusGraphFactory;
 import org.janusgraph.diskstorage.cassandra.AbstractCassandraStoreManager;
 import org.janusgraph.diskstorage.configuration.ConfigElement;
 import org.janusgraph.diskstorage.configuration.WriteConfiguration;
+import org.janusgraph.diskstorage.configuration.BasicConfiguration;
+import org.janusgraph.diskstorage.configuration.ModifiableConfiguration;
 import org.janusgraph.graphdb.configuration.GraphDatabaseConfiguration;
 import org.janusgraph.graphdb.configuration.JanusGraphConstants;
 import org.janusgraph.graphdb.database.StandardJanusGraph;
@@ -56,10 +58,10 @@ public abstract class CassandraGraphTest extends JanusGraphTest {
         assertNull(wc.get(ConfigElement.getPath(GraphDatabaseConfiguration.INITIAL_STORAGE_VERSION), 
                    GraphDatabaseConfiguration.INITIAL_STORAGE_VERSION.getDatatype()));
         wc.set(ConfigElement.getPath(GraphDatabaseConfiguration.INITIAL_STORAGE_VERSION), JanusGraphConstants.STORAGE_VERSION);
-        assertTrue(JanusGraphConstants.STORAGE_VERSION.equals(
-                   wc.get(ConfigElement.getPath(GraphDatabaseConfiguration.INITIAL_STORAGE_VERSION), 
-                   GraphDatabaseConfiguration.INITIAL_STORAGE_VERSION.getDatatype())));
         graph = (StandardJanusGraph) JanusGraphFactory.open(wc);
+        mgmt = graph.openManagement();
+        assertEquals(JanusGraphConstants.STORAGE_VERSION, (mgmt.get("graph.storage-version")));
+        mgmt.rollback();
     }
 
     @Test
