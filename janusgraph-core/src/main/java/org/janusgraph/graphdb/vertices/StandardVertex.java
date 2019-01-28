@@ -33,7 +33,7 @@ import java.util.List;
 
 public class StandardVertex extends AbstractVertex {
 
-    private Object lifecycleMutex = new Object();
+    private final Object lifecycleMutex = new Object();
     private volatile byte lifecycle;
     private volatile AddedRelationsContainer addedRelations=AddedRelationsContainer.EMPTY;
 
