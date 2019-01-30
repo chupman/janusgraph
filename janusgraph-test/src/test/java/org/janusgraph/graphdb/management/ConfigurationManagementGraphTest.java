@@ -35,9 +35,39 @@ import java.util.Map;
 import java.util.HashMap;
 
 import org.junit.Test;
+//import org.junit.Before;
+import org.junit.After;
 import static org.junit.Assert.*;
 
 public class ConfigurationManagementGraphTest {
+
+    @After
+    public void cleanUp() {
+        JanusGraphManager.shutdownJanusGraphManager();
+        ConfigurationManagementGraph.shutdownConfigurationManagementGraph();
+    }
+
+    @Test
+    public void shouldCloseAllTxsIfIndexExists() {
+        final JanusGraphManager gm = new JanusGraphManager(new Settings());
+        final Map<String, Object> map = new HashMap<>();
+        map.put(STORAGE_BACKEND.toStringWithoutRoot(), "inmemory");
+        final MapConfiguration config = new MapConfiguration(map);
+        final StandardJanusGraph graph = new StandardJanusGraph(new GraphDatabaseConfiguration(new CommonsConfiguration(config)));
+
+        // Emulate ConfigurationManagementGraph indices already exists
+        JanusGraphManagement management = graph.openManagement();
+        PropertyKey key = management.makePropertyKey("some_property").dataType(String.class).make();
+        management.buildIndex("Created_Using_Template_Index", Vertex.class).addKey(key).buildCompositeIndex();
+        management.buildIndex("Template_Index", Vertex.class).addKey(key).buildCompositeIndex();
+        management.buildIndex("Graph_Name_Index", Vertex.class).addKey(key).buildCompositeIndex();
+        management.commit();
+
+        new ConfigurationManagementGraph(graph);
+
+        assertEquals(0, graph.getOpenTransactions().size());
+
+    }
 
     @Test
     public void shouldReindexIfPropertyKeyExists() throws Exception {
@@ -64,24 +94,5 @@ public class ConfigurationManagementGraphTest {
         assertNotNull(propertyKey);
         assertEquals(ENABLED, index.getIndexStatus(propertyKey));
         management.commit();
-    }
-
-    @Test
-    public void shouldCloseAllTxsIfIndexExists() {
-        final JanusGraphManager gm = new JanusGraphManager(new Settings());
-        final StandardJanusGraph graph = (StandardJanusGraph) JanusGraphFactory.open("inmemory");
-
-        // Emulate ConfigurationManagementGraph indices already exists
-        JanusGraphManagement management = graph.openManagement();
-        PropertyKey key = management.makePropertyKey("some_property").dataType(String.class).make();
-        management.buildIndex("Created_Using_Template_Index", Vertex.class).addKey(key).buildCompositeIndex();
-        management.buildIndex("Template_Index", Vertex.class).addKey(key).buildCompositeIndex();
-        management.buildIndex("Graph_Name_Index", Vertex.class).addKey(key).buildCompositeIndex();
-        management.commit();
-
-        new ConfigurationManagementGraph(graph);
-
-        assertEquals(0, graph.getOpenTransactions().size());
-
     }
 }

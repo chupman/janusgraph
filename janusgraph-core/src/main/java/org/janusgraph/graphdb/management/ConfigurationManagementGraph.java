@@ -330,4 +330,9 @@ public class ConfigurationManagementGraph {
         });
         return map;
     }
+
+    // To be used for testing purposes
+    protected static void shutdownConfigurationManagementGraph() {
+        instance = null;
+    }
 }
