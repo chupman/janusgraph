@@ -1,0 +1,16 @@
+[Unit]
+Description=JanusGraph
+Documentation=http://janusgraph.org/
+After=network.target
+
+[Service]
+EnvironmentFile=/opt/janusgraph/conf/janusgraph.env
+Type=forking
+
+WorkingDirectory=/opt/janusgraph
+# Using /bin/bash gets around potential SELinux issues with Java
+ExecStart=/bin/bash -c "${JANUSGRAPH_HOME}/bin/gremlin-server.sh start"
+ExecStop=/bin/bash -c "${JANUSGRAPH_HOME}/bin/gremlin-server.sh stop"
+
+[Install]
+WantedBy=multi-user.target
