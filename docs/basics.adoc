@@ -504,11 +504,12 @@ Connecting to Gremlin-Server (127.0.0.1:8182)... OK (connected to 127.0.0.1:8182
 Run gremlin.sh to connect.
 ----
 
-==== Running JanusGraph Server as a daemon
+==== Running JanusGraph Server as a Daemon
 
-The JanusGraph https://github.com/JanusGraph/janusgraph/releases[release] also comes with an init script that can be found at `bin/gremlin-server.sh`. The `gremlin-server.sh` script was upgraded to an init script which supports start, stop, status. Its usage is backwards compatible and can still be run in the foreground by invoking `./bin/gremlin-server.sh` with an option parameter of a gremlin server yaml file.
+The JanusGraph https://github.com/JanusGraph/janusgraph/releases[release] also comes with an init script that can be found at `bin/gremlin-server.sh`.
+The script can also be run in the foreground by invoking `./bin/gremlin-server.sh` with an optional parameter of a Gremlin Server yaml file. When running JanusGraph as a daemon, it is expected that the operator will install/run the storage and indexing backends separately.
 
-If running JanusGraph as a daemon it is recommended to rename the pre-packaged to simply `janusgraph`, after unzipping, and move the distribution to `/opt/`.
+If running JanusGraph as a daemon it is recommended to rename the pre-packaged distribution to simply `janusgraph`, after unzipping, and move the distribution to `/opt/`.
 
 [source, text]
 ----
@@ -519,18 +520,18 @@ For System V you can copy `gremlin-server.sh` to `/etc/init.d/`. You will also n
 
 **Note** This example assumes that `$JANUSGRAPH_HOME` is `/opt/janusgraph`
 
-Copy to /etc/init.d
+Copy to `/etc/init.d`:
 [source, text]
 ----
 cp bin/gremlin-server.sh /etc/init.d/janusgraph
 cp conf/janusgraph.env /etc/default/janusgraph
 ----
 
-For System D there is a unit file provided at `conf/janusgraph.service` that can be copied to `/lib/systemd/system/`. This unit file expects an environment variable definition file at `/opt/janusgraph/conf/janusgraph.env` that can be found at `conf/janusgraph.env` in the pre-packaged distribution. You can configure the `EnvironmentFile` location in the `janusgraph.service` file. All file locations used in `gremlin-server.sh` can be configured by Environment variables which should be defined in janusgraph.env if you wish to override the default locations.
+For System D there is a unit file provided at `conf/janusgraph.service` that can be copied to `/lib/systemd/system/`. This unit file expects an Environment variable definition file at `/opt/janusgraph/conf/janusgraph.env` that can be found at `conf/janusgraph.env` in the pre-packaged distribution. You can configure the `EnvironmentFile` location in the `janusgraph.service` file. All file locations used in `gremlin-server.sh` can be configured by Environment variables which should be defined in `janusgraph.env` if you wish to override the default locations.
 
 **Note** This example assumes that `$JANUSGRAPH_HOME` is `/opt/janusgraph`
 
-Copy to /lib/systemd/system
+Copy to `/lib/systemd/system`:
 [source, text]
 ----
 cp conf/janusgraph.service /lib/systemd/system/

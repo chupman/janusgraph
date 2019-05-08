@@ -6,6 +6,10 @@ After=network.target
 [Service]
 EnvironmentFile=/opt/janusgraph/conf/janusgraph.env
 Type=forking
+LimitNOFILE=100000
+LimitMEMLOCK=infinity
+LimitNPROC=32768
+LimitAS=infinity
 
 WorkingDirectory=/opt/janusgraph
 # Using /bin/bash gets around potential SELinux issues with Java

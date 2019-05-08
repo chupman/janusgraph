@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2018 JanusGraph Authors
+# Copyright 2019 JanusGraph Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,8 +28,6 @@ if [[ -z "$JANUSGRAPH_HOME" ]] && [[ -z "$JANUSGRAPH_BIN" ]]; then
     [[ $SOURCE != /* ]] && SOURCE="$BIN/$SOURCE"
   done
   JANUSGRAPH_BIN="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-  echo"Hello"
-  echo $JANUSGRAPH_BIN
   cd -P "$( dirname "$SOURCE" )" || exit 1
   cd $JANUSGRAPH_BIN/..
   JANUSGRAPH_HOME="$(pwd)"
@@ -153,6 +151,7 @@ stop() {
     echo Server not running
     rm -f "$JANUSGRAPH_PID_FILE"
   else
+    PID=$(cat "$JANUSGRAPH_PID_FILE")
     kill "$PID" &> /dev/null || { echo "Unable to kill server [$PID]"; exit 1; }
     for i in $(seq 1 60); do
       ps -p "$PID" &> /dev/null || { echo "Server stopped [$PID]"; rm -f "$JANUSGRAPH_PID_FILE"; return 0; }
@@ -172,22 +171,40 @@ start() {
     exit 1
   fi
 
-  mkdir -p "$JANUSGRAPH_LOGDIR" &>/dev/null
+  if [[ -z "$RUNAS" ]]; then
+    mkdir -p "$JANUSGRAPH_LOGDIR" &>/dev/null
+    mkdir -p "$JANUSGRAPH_PID_DIR" &>/dev/null
+  elif [[ $(uname) = DARWIN* ]]; then
+    su "$RUNAS" -c "mkdir -p $JANUSGRAPH_LOGDIR &>/dev/null"
+    su "$RUNAS" -c "mkdir -p $PID_DIR &>/dev/null"
+  else
+    su -c "mkdir -p $JANUSGRAPH_LOGDIR &>/dev/null"  "$RUNAS"
+    su -c "mkdir -p $PID_DIR &>/dev/null"  "$RUNAS"
+  fi
+
   if [[ ! -d "$JANUSGRAPH_LOGDIR" ]]; then
     echo ERROR: JANUSGRAPH_LOGDIR $JANUSGRAPH_LOGDIR does not exist and could not be created.
     exit 1
   fi
 
-  mkdir -p "$JANUSGRAPH_PID_DIR" &>/dev/null
   if [[ ! -d "$JANUSGRAPH_PID_DIR" ]]; then
     echo ERROR: JANUSGRAPH_PID_DIR $JANUSGRAPH_PID_DIR does not exist and could not be created.
     exit 1
   fi
 
-  $JAVA -Djanusgraph.logdir="$JANUSGRAPH_LOGDIR" -Dlog4j.configuration=$JANUSGRAPH_LOG4J_CONF $JAVA_OPTIONS -cp $JANUSGRAPH_CP:$CLASSPATH $JANUSGRAPH_SERVER_CMD $JANUSGRAPH_YAML >> "$JANUSGRAPH_LOG_FILE" 2>&1 &
-  PID=$!
-  disown $PID
-  echo $PID > "$JANUSGRAPH_PID_FILE"
+  if [[ -z "$RUNAS" ]]; then
+    $JAVA -Djanusgraph.logdir="$JANUSGRAPH_LOGDIR" -Dlog4j.configuration=$JANUSGRAPH_LOG4J_CONF $JAVA_OPTIONS \
+      -cp $JANUSGRAPH_CP:$CLASSPATH $JANUSGRAPH_SERVER_CMD $JANUSGRAPH_YAML >> "$JANUSGRAPH_LOG_FILE" 2>&1 &
+    PID=$!
+    disown $PID
+    echo $PID > "$JANUSGRAPH_PID_FILE"
+  elif [[ $(uname) = DARWIN* ]]; then
+    su "$RUNAS" -c "$JAVA -Djanusgraph.logdir=${JANUSGRAPH_LOGDIR} -Dlog4j.configuration=$JANUSGRAPH_LOG4J_CONF $JAVA_OPTIONS -cp $JANUSGRAPH_CP:$CLASSPATH $JANUSGRAPH_SERVER_CMD $JANUSGRAPH_YAML >> ${JANUSGRAPH_LOG_FILE} 2>&1 & echo \$! > ${JANUSGRAPH_PID_FILE}"
+    chown "$RUNAS" "$PID_FILE"
+  else
+    su -c "$JAVA -Djanusgraph.logdir=${JANUSGRAPH_LOGDIR} -Dlog4j.configuration=$JANUSGRAPH_LOG4J_CONF $JAVA_OPTIONS -cp $JANUSGRAPH_CP:$CLASSPATH $JANUSGRAPH_SERVER_CMD $JANUSGRAPH_YAML >> ${JANUSGRAPH_LOG_FILE} 2>&1 & echo \$! "  "$RUNAS" > "$PID_FILE"
+    chown "$RUNAS" "$PID_FILE"
+  fi
 
   isRunning
   RUNNING=$?
@@ -215,7 +232,6 @@ startForeground() {
     echo Starting in foreground not supported with RUNAS
     exit 1
   fi
-
 }
 
 install() {
@@ -227,7 +243,15 @@ install() {
   fi
 
   echo Installing dependency $@
-  $JAVA -Djanusgraph.logdir="$JANUSGRAPH_LOGDIR" -Dlog4j.configuration=$JANUSGRAPH_LOG4J_CONF $JAVA_OPTIONS -cp $JANUSGRAPH_CP:$CLASSPATH org.apache.tinkerpop.gremlin.server.util.GremlinServerInstall "$@"
+
+  DEPS="$@"
+  if [[ -z "$RUNAS" ]]; then
+    $JAVA -Djanusgraph.logdir="$JANUSGRAPH_LOGDIR" -Dlog4j.configuration=$JANUSGRAPH_LOG4J_CONF $JAVA_OPTIONS -cp $JANUSGRAPH_CP:$CLASSPATH org.apache.tinkerpop.gremlin.server.util.GremlinServerInstall $DEPS
+  elif [[ $(uname) = DARWIN* ]]; then
+    su "$RUNAS" -c "$JAVA -Djanusgraph.logdir=\"$JANUSGRAPH_LOGDIR\" -Dlog4j.configuration=$JANUSGRAPH_LOG4J_CONF $JAVA_OPTIONS -cp $JANUSGRAPH_CP:$CLASSPATH org.apache.tinkerpop.gremlin.server.util.GremlinServerInstall $DEPS"
+  else
+    su -c "$JAVA -Djanusgraph.logdir=\"$JANUSGRAPH_LOGDIR\" -Dlog4j.configuration=$JANUSGRAPH_LOG4J_CONF $JAVA_OPTIONS -cp $JANUSGRAPH_CP:$CLASSPATH org.apache.tinkerpop.gremlin.server.util.GremlinServerInstall $DEPS " "$RUNAS"
+  fi
 }
 
 case "$1" in
