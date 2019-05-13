@@ -16,6 +16,7 @@ package org.janusgraph.diskstorage.indexing;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import org.janusgraph.core.Cardinality;
 import org.janusgraph.diskstorage.EntryMetaData;
 import org.janusgraph.diskstorage.Mutation;
 
@@ -33,19 +34,25 @@ import java.util.List;
 
 public class IndexMutation extends Mutation<IndexEntry,IndexEntry> {
 
+    private final KeyInformation.StoreRetriever storeRetriever;
     private final boolean isNew;
     private boolean isDeleted;
 
-    public IndexMutation(List<IndexEntry> additions, List<IndexEntry> deletions, boolean isNew, boolean isDeleted) {
+    public IndexMutation(KeyInformation.StoreRetriever storeRetriever,
+                         List<IndexEntry> additions, List<IndexEntry> deletions,
+                         boolean isNew, boolean isDeleted) {
         super(additions, deletions);
         Preconditions.checkArgument(!(isNew && isDeleted),"Invalid status");
+        this.storeRetriever = storeRetriever;
         this.isNew = isNew;
         this.isDeleted = isDeleted;
     }
 
-    public IndexMutation(boolean isNew, boolean isDeleted) {
+    public IndexMutation(KeyInformation.StoreRetriever storeRetriever,
+                         boolean isNew, boolean isDeleted) {
         super();
         Preconditions.checkArgument(!(isNew && isDeleted),"Invalid status");
+        this.storeRetriever = storeRetriever;
         this.isNew = isNew;
         this.isDeleted = isDeleted;
     }
@@ -68,11 +75,16 @@ public class IndexMutation extends Mutation<IndexEntry,IndexEntry> {
         isDeleted=false;
     }
 
-    public static final Function<IndexEntry,String> ENTRY2FIELD_FCT = new Function<IndexEntry, String>() {
+    private boolean isCollection(String field) {
+        KeyInformation keyInformation = storeRetriever.get(field);
+        return keyInformation != null && keyInformation.getCardinality() != Cardinality.SINGLE;
+    }
+
+    private final Function<IndexEntry,String> ENTRY2FIELD_FCT = new Function<IndexEntry, String>() {
         @Nullable
         @Override
         public String apply(final IndexEntry indexEntry) {
-            return indexEntry.field;
+            return isCollection(indexEntry.field) ? indexEntry.field + "." + indexEntry.value : indexEntry.field;
         }
     };
 
