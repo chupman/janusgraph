@@ -507,7 +507,10 @@ Run gremlin.sh to connect.
 ==== Running JanusGraph Server as a Daemon
 
 The JanusGraph https://github.com/JanusGraph/janusgraph/releases[release] also comes with an init script that can be found at `bin/gremlin-server.sh`.
-The script can also be run in the foreground by invoking `./bin/gremlin-server.sh` with an optional parameter of a Gremlin Server yaml file. When running JanusGraph as a daemon, it is expected that the operator will install/run the storage and indexing backends separately.
+The script can also be run in the foreground by invoking `./bin/gremlin-server.sh` with an optional parameter of a Gremlin Server yaml file.
+When running JanusGraph as a daemon, it is expected that the operator will install/run the storage and indexing backends separately.
+The operator is also expected to configure the Gremlin server to match their environment.
+For simplicity the default `gremlin-server.yaml` configuration template is used in the following examples.
 
 If running JanusGraph as a daemon it is recommended to rename the pre-packaged distribution to simply `janusgraph`, after unzipping, and move the distribution to `/opt/`.
 
@@ -516,31 +519,47 @@ If running JanusGraph as a daemon it is recommended to rename the pre-packaged d
 mv janusgraph-$VERSION-hadoop2 /opt/janusgraph
 ----
 
-For System V you can copy `gremlin-server.sh` to `/etc/init.d/`. You will also need to copy `conf/janusgraph.env` to `/etc/default/janusgraph` and make sure that `$JANUSGRAPH_HOME` and `$JANUSGRAPH_YAML` are pointing at the correct locations.
+For System V you can copy `gremlin-server.sh` to `/etc/init.d/`. You will also need to copy `conf/janusgraph.env` to `/etc/default/janusgraph` and make sure that `$JANUSGRAPH_HOME` and `$JANUSGRAPH_CFG` are pointing at the correct locations.
+The default location for `$JANUSGRAPH_CFG` is `/etc/opt/janusgraph`.
+The Gremlin Server configuration and associated graph properties templates that will be used should be moved to `gremlin-server.yaml` and `janusgraph.properties` within the `$JANUSGRAPH_CFG` directory along with the `empty-sample.groovy` file.
 
-**Note** This example assumes that `$JANUSGRAPH_HOME` is `/opt/janusgraph`
+**Note** This example assumes that `$JANUSGRAPH_HOME` is `/opt/janusgraph` and `$JANUSGRAPH_CFG` is `/etc/opt/janusgraph`
 
 Copy to `/etc/init.d`:
 [source, text]
 ----
 cp bin/gremlin-server.sh /etc/init.d/janusgraph
 cp conf/janusgraph.env /etc/default/janusgraph
+cp conf/gremlin-server/daemon-gremlin-server.yaml /etc/opt/janusgraph/gremlin-server.yaml
+cp conf/gremlin-server/janusgraph-cql-es-server.properties /etc/opt/janusgraph/janusgraph.properties
+cp scripts/empty-sample.groovy /etc/opt/janusgraph/empty-sample.groovy
 ----
 
-For System D there is a unit file provided at `conf/janusgraph.service` that can be copied to `/lib/systemd/system/`. This unit file expects an Environment variable definition file at `/opt/janusgraph/conf/janusgraph.env` that can be found at `conf/janusgraph.env` in the pre-packaged distribution. You can configure the `EnvironmentFile` location in the `janusgraph.service` file. All file locations used in `gremlin-server.sh` can be configured by Environment variables which should be defined in `janusgraph.env` if you wish to override the default locations.
+For System D there is a unit file provided at `conf/janusgraph.service` that can be copied to `/lib/systemd/system/`.
+This unit file expects an Environment variable definition file at `/etc/opt/janusgraph/janusgraph.env` that can be found at `conf/janusgraph.env` in the pre-packaged distribution.
+You can also configure the `EnvironmentFile` location in the `janusgraph.service` file if you wish to use a different location.
+All file locations used in `gremlin-server.sh` can be configured by Environment variables which should be defined in `janusgraph.env` if you wish to override the default locations.
+A copy of the server configuration, graph property, and groovy script files needs to be placed within the `JANUSGRAPH_CFG` directory.
+The default location for `$JANUSGRAPH_CFG` is `/etc/opt/janusgraph`.
 
-**Note** This example assumes that `$JANUSGRAPH_HOME` is `/opt/janusgraph`
+
+**Note** This example assumes that `$JANUSGRAPH_HOME` is `/opt/janusgraph` and `$JANUSGRAPH_CFG` is `/etc/opt/janusgraph`
 
 Copy to `/lib/systemd/system`:
 [source, text]
 ----
-cp conf/janusgraph.service /lib/systemd/system/
+cp conf/janusgraph.service /lib/systemd/system/janusgraph.service
+cp conf/janusgraph.env /etc/opt/janusgraph/janusgraph.env
+cp conf/gremlin-server/daemon-gremlin-server.yaml /etc/opt/janusgraph/gremlin-server.yaml
+cp conf/gremlin-server/janusgraph-cql-es-server.properties /etc/opt/janusgraph/janusgraph.properties
+cp scripts/empty-sample.groovy /etc/opt/janusgraph/empty-sample.groovy
 ----
 
 [[first-example-connecting-gremlin-server]]
 ===== Connecting to Gremlin Server
 
-After running janusgraph.sh, Gremlin Server will be ready to listen for WebSocket connections.  The easiest way to test the connection is with Gremlin Console.
+After running janusgraph.sh, Gremlin Server will be ready to listen for WebSocket connections.
+The easiest way to test the connection is with Gremlin Console.
 
 Start http://tinkerpop.apache.org/docs/{tinkerpop_version}/reference#gremlin-console[Gremlin Console] with `bin/gremlin.sh` and use the `:remote` and `:>` commands to issue Gremlin to Gremlin Server:
 
