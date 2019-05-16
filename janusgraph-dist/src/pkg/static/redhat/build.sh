@@ -22,4 +22,4 @@ EOF
 cat janusgraph.spec.base >> janusgraph.spec
 
 rpmbuild -bb janusgraph.spec
-rpmsign --addsign --key-id=$SIGNING_KEY_ID "$TOPDIR"/RPMS/noarch/janusgraph*-$RPM_VERSION-$RPM_RELEASE.noarch.rpm
+rpmsign "$TOPDIR"/RPMS/noarch/janusgraph*-$RPM_VERSION-$RPM_RELEASE.noarch.rpm
