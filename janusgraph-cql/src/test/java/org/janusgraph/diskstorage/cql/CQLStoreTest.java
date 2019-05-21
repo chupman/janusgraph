@@ -131,7 +131,7 @@ public class CQLStoreTest extends KeyColumnValueStoreTest {
         if (cqlStoreManager.isCompactStorageAllowed()) {
             assertTrue(cqlStoreManager.getTableMetadata(cf).getOptions().isCompactStorage());
         } else {
-            assertFalse(assertTrue(cqlStoreManager.getTableMetadata(cf).getOptions().isCompactStorage());
+            assertFalse(cqlStoreManager.getTableMetadata(cf).getOptions().isCompactStorage());
         }
     }
 
