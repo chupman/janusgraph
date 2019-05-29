@@ -150,7 +150,7 @@ public abstract class Mutation<E,K> {
     public<V> void consolidate(Function<E,V> convertAdditions, Function<K,V> convertDeletions) {
         if (hasDeletions() && hasAdditions()) {
             Set<V> adds = Sets.newHashSet(Iterables.transform(additions,convertAdditions));
-            deletions.removeIf(k -> adds.contains(convertDeletions.apply(k)));
+            deletions.removeIf(k1 -> adds.contains(k2 -> convertDeletions));
         }
     }
 
