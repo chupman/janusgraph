@@ -30,6 +30,11 @@ can support thousands of concurrent users, complex traversals, and analytic grap
 The [project homepage](https://janusgraph.org) contains more information on JanusGraph and
 provides links to documentation, getting-started guides and release downloads.
 
+### Try JanusGraph
+Click the 'Try in PWD` button to deploy JanusGraph with a Cassandra storage backend and Elasticsearch mixed backend in a [Play-With-Docker](https://labs.play-with-docker.com/) playground. You can also run the containers locally using the instructions found in [janusgraph-docker](https://github.com/JanusGraph/janusgraph-docker#using-docker-compose).
+
+[![Try in PWD](https://github.com/play-with-docker/stacks/raw/master/assets/images/button.png)](https://labs.play-with-docker.com/?stack=https://raw.githubusercontent.com/JanusGraph/janusgraph-docker/master/docker-compose-cql-es.yml)
+
 ## Visualization
 
 To visualize graphs stored in JanusGraph, you can use any of the following
